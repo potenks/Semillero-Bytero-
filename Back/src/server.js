@@ -12,8 +12,18 @@ import cookieParser from 'cookie-parser'
 import syncRoutes from './routes/api/sync.js'
 import classroomWebhook from './routes/webhooks/classroom.js'
 import swaggerUi from 'swagger-ui-express'
-import apiSpec from './docs/openapi.json' assert { type: 'json' }
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import reportsRoutes from './routes/api/reports.js'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const apiSpec = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'docs', 'openapi.json'), 'utf8')
+)
+
+// Restart trigger: harmless comment for nodemon
 async function start() {
   await connectDatabase()
 
@@ -29,6 +39,7 @@ async function start() {
   app.use('/api/students', studentsRoutes)
   app.use('/api/analytics', analyticsRoutes)
   app.use('/api/sync', syncRoutes)
+  app.use('/api/reports', reportsRoutes)
   app.use('/webhooks/classroom', classroomWebhook)
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiSpec))
 

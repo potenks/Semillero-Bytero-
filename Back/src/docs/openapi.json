@@ -11,6 +11,33 @@
     "/api/auth/google/callback": { "get": { "summary": "Callback de Google", "responses": { "302": { "description": "Redirect al frontend" } } } },
     "/api/auth/me": { "get": { "summary": "Usuario actual", "responses": { "200": { "description": "Usuario" }, "401": { "description": "Unauthorized" } } } },
     "/api/auth/logout": { "post": { "summary": "Logout", "responses": { "200": { "description": "ok" } } } },
-    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } }
+    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } },
+    "/api/analytics/dashboard": {
+      "get": {
+        "summary": "Métricas de dashboard para el usuario autenticado",
+        "parameters": [
+          { "in": "query", "name": "from", "schema": { "type": "string", "format": "date-time" }, "required": false },
+          { "in": "query", "name": "to", "schema": { "type": "string", "format": "date-time" }, "required": false }
+        ],
+        "responses": {
+          "200": { "description": "Métricas del dashboard" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/reports/submissions.csv": {
+      "get": {
+        "summary": "Exporta CSV de entregas del usuario autenticado",
+        "parameters": [
+          { "in": "query", "name": "from", "schema": { "type": "string", "format": "date-time" }, "required": false },
+          { "in": "query", "name": "to", "schema": { "type": "string", "format": "date-time" }, "required": false },
+          { "in": "query", "name": "courseId", "schema": { "type": "string" }, "required": false }
+        ],
+        "responses": {
+          "200": { "description": "CSV generado" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    }
   }
 }
