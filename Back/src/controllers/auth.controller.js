@@ -20,11 +20,12 @@ export const AuthController = {
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-      const redirectUrl = `${req.headers.origin?.includes('5173') ? req.headers.origin : 'http://localhost:5173'}`
+      // Redirigir usando FRONTEND_URL configurado (opción B)
+      const redirectUrl = env.frontendUrl || 'http://localhost:5173'
       return res.redirect(redirectUrl)
     } catch (e) {
       console.error('Auth callback error', e)
-      return res.status(500).send('Auth error')
+      return res.status(500).send(`Auth error: ${e?.message || 'unknown'}`)
     }
   },
 

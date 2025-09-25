@@ -6,7 +6,7 @@ export default function Login() {
         <button
           className="px-4 py-2 bg-primary text-white rounded"
           onClick={() => {
-            const api = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+            const api = import.meta.env.VITE_API_URL || 'http://localhost:5001'
             window.location.href = `${api}/api/auth/google`
           }}
         >

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { googleClient, googleScopes } from '../config/google.auth.js'
+import { googleClient, googleScopes, createOAuthClient } from '../config/google.auth.js'
 import { env } from '../config/environment.js'
 import User from '../models/User.js'
 
@@ -38,7 +38,31 @@ export const AuthService = {
       await user.save()
     }
 
+    // almacenar tokens de Google (access/refresh/expiry)
+    user.googleTokens = {
+      accessToken: tokens.access_token || user.googleTokens?.accessToken,
+      refreshToken: tokens.refresh_token || user.googleTokens?.refreshToken,
+      expiryDate: tokens.expiry_date ? new Date(tokens.expiry_date) : user.googleTokens?.expiryDate,
+    }
+    await user.save()
+
     const token = signJwt({ uid: user._id.toString(), role: user.role })
     return { token, user: { id: user._id, email: user.email, name: user.name, avatar: user.avatar, role: user.role } }
+  },
+
+  async getAuthorizedOAuthClientForUser(userId) {
+    const user = await User.findById(userId)
+    if (!user) throw new Error('User not found')
+    const client = createOAuthClient()
+    if (!user.googleTokens?.refreshToken && !user.googleTokens?.accessToken) {
+      throw new Error('User has no Google tokens')
+    }
+    client.setCredentials({
+      access_token: user.googleTokens?.accessToken,
+      refresh_token: user.googleTokens?.refreshToken,
+      expiry_date: user.googleTokens?.expiryDate ? new Date(user.googleTokens.expiryDate).getTime() : undefined,
+    })
+    // Si expira, google-auth-library refresca automáticamente si hay refresh_token
+    return { client, user }
   },
 }
