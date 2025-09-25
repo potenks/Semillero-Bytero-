@@ -9,6 +9,10 @@ import coursesRoutes from './routes/api/courses.js'
 import studentsRoutes from './routes/api/students.js'
 import analyticsRoutes from './routes/api/analytics.js'
 import cookieParser from 'cookie-parser'
+import syncRoutes from './routes/api/sync.js'
+import classroomWebhook from './routes/webhooks/classroom.js'
+import swaggerUi from 'swagger-ui-express'
+import apiSpec from './docs/openapi.json' assert { type: 'json' }
 
 async function start() {
   await connectDatabase()
@@ -24,6 +28,9 @@ async function start() {
   app.use('/api/courses', coursesRoutes)
   app.use('/api/students', studentsRoutes)
   app.use('/api/analytics', analyticsRoutes)
+  app.use('/api/sync', syncRoutes)
+  app.use('/webhooks/classroom', classroomWebhook)
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiSpec))
 
   app.get('/', (_req, res) => res.send('Semillero Backend activo'))
 

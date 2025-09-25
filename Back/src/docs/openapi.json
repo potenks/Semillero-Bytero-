@@ -1,0 +1,16 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Semillero Digital API",
+    "version": "0.1.0"
+  },
+  "servers": [{ "url": "http://localhost:3001" }],
+  "paths": {
+    "/api/health": { "get": { "summary": "Health check", "responses": { "200": { "description": "ok" } } } },
+    "/api/auth/google": { "get": { "summary": "Inicia login con Google", "responses": { "302": { "description": "Redirect a Google" } } } },
+    "/api/auth/google/callback": { "get": { "summary": "Callback de Google", "responses": { "302": { "description": "Redirect al frontend" } } } },
+    "/api/auth/me": { "get": { "summary": "Usuario actual", "responses": { "200": { "description": "Usuario" }, "401": { "description": "Unauthorized" } } } },
+    "/api/auth/logout": { "post": { "summary": "Logout", "responses": { "200": { "description": "ok" } } } },
+    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } }
+  }
+}

@@ -1,23 +1,56 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Login from './pages/Auth/Login'
+import Dashboard from './pages/Dashboard/Dashboard'
+import Students from './pages/Students/Students'
+import Courses from './pages/Courses/Courses'
+import Header from './components/common/Header'
+import Sidebar from './components/common/Sidebar'
+import { useAuthContext } from './context/AuthContext'
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuthContext()
+  if (loading) return <div className="p-6">Cargando...</div>
+  if (!user) return <Navigate to="/login" replace />
+  return children
+}
+
 export default function App() {
   return (
     <div className="min-h-screen text-gray-800">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-heading text-primary">Semillero Digital</h1>
-          <nav className="space-x-4">
-            <a className="hover:text-primary" href="#">Dashboard</a>
-            <a className="hover:text-primary" href="#">Estudiantes</a>
-            <a className="hover:text-primary" href="#">Cursos</a>
-          </nav>
+      <Header />
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-4 p-4">
+        <Sidebar />
+        <div>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/students"
+              element={
+                <ProtectedRoute>
+                  <Students />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses"
+              element={
+                <ProtectedRoute>
+                  <Courses />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto p-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-heading mb-2">Bienvenido</h2>
-          <p>Plataforma de seguimiento para Semillero Digital. Configuración base lista.</p>
-        </div>
-      </main>
+      </div>
     </div>
   )
 }
