@@ -1,4 +1,4 @@
-Genial 🙌 acá te dejo el **README en formato Markdown**, listo para copiar y pegar en tu proyecto:
+
 
 # 📚 Proyecto: Integración con Google Classroom  
 
