@@ -111,6 +111,6 @@ Construir una **capa de reportería por encima de Google Classroom** que permita
 
 ## 📌 Equipo
 
-Proyecto desarrollado en el marco del **Vibeathon** por el equipo conformado por **Sebastián Paz, Sebastián Palomino, David Potin y Dante**.
+Proyecto desarrollado en el marco del **Vibeathon** por el equipo conformado por **Sebastián Paz, Sebastián Palomino, David Potin, Nazareno Morales, Steven Arteaga y Dante Reggiani**.
 
 
