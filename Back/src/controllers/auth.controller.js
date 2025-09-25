@@ -42,4 +42,9 @@ export const AuthController = {
       return res.status(401).json({ error: 'Invalid token' })
     }
   },
+
+  logout: async (req, res) => {
+    res.clearCookie('token', { httpOnly: true, sameSite: 'lax' })
+    return res.json({ ok: true })
+  },
 }
