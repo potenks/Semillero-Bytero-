@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f9fafb;
+}
+
+html, body, #root { height: 100%; }
+body { background-color: var(--bg); }
+
+@layer base {
+  h1, h2, h3, h4 { @apply font-heading; }
+}
