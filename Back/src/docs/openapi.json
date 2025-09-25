@@ -11,6 +11,57 @@
     "/api/auth/google/callback": { "get": { "summary": "Callback de Google", "responses": { "302": { "description": "Redirect al frontend" } } } },
     "/api/auth/me": { "get": { "summary": "Usuario actual", "responses": { "200": { "description": "Usuario" }, "401": { "description": "Unauthorized" } } } },
     "/api/auth/logout": { "post": { "summary": "Logout", "responses": { "200": { "description": "ok" } } } },
-    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } }
+    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } },
+    "/api/analytics/dashboard": {
+      "get": {
+        "summary": "Métricas del dashboard para el usuario logueado",
+        "responses": {
+          "200": {
+            "description": "Métricas calculadas",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DashboardAnalytics" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/webhooks/classroom": {
+      "post": {
+        "summary": "Webhook de Classroom (eventos de cambios)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ClassroomWebhookEvent" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Evento recibido" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DashboardAnalytics": {
+        "type": "object",
+        "properties": {
+          "courses": { "type": "integer", "example": 5 },
+          "students": { "type": "integer", "example": 120 },
+          "attendanceRate": { "type": "number", "format": "float", "example": 0.92 },
+          "onTimeSubmissionsRate": { "type": "number", "format": "float", "example": 0.81 }
+        }
+      },
+      "ClassroomWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "example": "assignment:new" },
+          "courseId": { "type": "string" },
+          "payload": { "type": "object" }
+        }
+      }
+    }
   }
 }
