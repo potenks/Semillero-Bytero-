@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./Back
+    env_file:
+      - ./Back/.env.example
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - MONGODB_URI=mongodb://mongo:27017/semillero
+    depends_on:
+      - mongo
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./front
+    environment:
+      - VITE_API_BASE=http://localhost:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
