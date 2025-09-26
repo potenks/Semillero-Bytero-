@@ -1,0 +1,11 @@
+
+# Ignore local mongo binaries and data
+Back/.mongo/
+Back/.data/
+Back/mongo/
+Back/mongodb-binaries/
+# Env
+Back/.env
+# Builds
+node_modules/
+front/dist/
