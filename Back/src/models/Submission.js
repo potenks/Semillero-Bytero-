@@ -6,6 +6,7 @@ const SubmissionSchema = new mongoose.Schema({
   turnedInAt: Date,
   grade: Number,
   status: String,
+  googleId: { type: String, index: true },
 }, { timestamps: true })
 
 export default mongoose.model('Submission', SubmissionSchema)

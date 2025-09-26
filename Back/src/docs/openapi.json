@@ -2,40 +2,139 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Semillero Digital API",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
-  "servers": [{ "url": "http://localhost:3001" }],
+  "servers": [{ "url": "http://localhost:5001" }],
   "paths": {
     "/api/health": { "get": { "summary": "Health check", "responses": { "200": { "description": "ok" } } } },
     "/api/auth/google": { "get": { "summary": "Inicia login con Google", "responses": { "302": { "description": "Redirect a Google" } } } },
-    "/api/auth/google/callback": { "get": { "summary": "Callback de Google", "responses": { "302": { "description": "Redirect al frontend" } } } },
-    "/api/auth/me": { "get": { "summary": "Usuario actual", "responses": { "200": { "description": "Usuario" }, "401": { "description": "Unauthorized" } } } },
+    "/api/auth/google/callback": { "get": { "summary": "Callback de Google", "responses": { "302": { "description": "Redirect al frontend" }, "400": { "description": "Error de OAuth" } } } },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Usuario actual",
+        "responses": {
+          "200": { "description": "Usuario", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthMeResponse" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
     "/api/auth/logout": { "post": { "summary": "Logout", "responses": { "200": { "description": "ok" } } } },
-    "/api/sync/classroom": { "post": { "summary": "Forzar sync Classroom", "responses": { "200": { "description": "ok" } } } },
+    "/api/sync/classroom": {
+      "post": {
+        "summary": "Forzar sincronización con Google Classroom",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SyncRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Resultado de la sincronización", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SyncResponse" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Sync error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/webhooks/classroom": {
+      "post": {
+        "summary": "Webhook de Classroom (placeholder)",
+        "description": "Recibe eventos de Classroom. Falta validación de firma/Google PubSub.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookEvent" } } }
+        },
+        "responses": { "200": { "description": "ok" } }
+      }
+    },
     "/api/analytics/dashboard": {
       "get": {
         "summary": "Métricas de dashboard para el usuario autenticado",
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           { "in": "query", "name": "from", "schema": { "type": "string", "format": "date-time" }, "required": false },
           { "in": "query", "name": "to", "schema": { "type": "string", "format": "date-time" }, "required": false }
         ],
         "responses": {
-          "200": { "description": "Métricas del dashboard" },
-          "401": { "description": "Unauthorized" }
+          "200": { "description": "Métricas del dashboard", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AnalyticsResponse" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
         }
       }
     },
     "/api/reports/submissions.csv": {
       "get": {
         "summary": "Exporta CSV de entregas del usuario autenticado",
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           { "in": "query", "name": "from", "schema": { "type": "string", "format": "date-time" }, "required": false },
           { "in": "query", "name": "to", "schema": { "type": "string", "format": "date-time" }, "required": false },
           { "in": "query", "name": "courseId", "schema": { "type": "string" }, "required": false }
         ],
         "responses": {
-          "200": { "description": "CSV generado" },
-          "401": { "description": "Unauthorized" }
+          "200": { "description": "CSV generado", "content": { "text/csv": { } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      },
+      "AuthMeResponse": {
+        "type": "object",
+        "properties": { "user": { "type": "object", "properties": { "id": { "type": "string" }, "role": { "type": "string" } } } }
+      },
+      "SyncRequest": {
+        "type": "object",
+        "properties": { "force": { "type": "boolean", "default": false } }
+      },
+      "SyncResponse": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "result": { "type": "object", "properties": { "userId": { "type": "string" }, "courses": { "type": "integer" } } }
+        }
+      },
+      "WebhookEvent": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Payload de webhook Classroom (placeholder)."
+      },
+      "AnalyticsResponse": {
+        "type": "object",
+        "properties": {
+          "courses": { "type": "object", "properties": { "total": { "type": "integer" } } },
+          "submissions": {
+            "type": "object",
+            "properties": {
+              "byStatus": { "type": "object", "additionalProperties": { "type": "integer" } },
+              "onTime": { "type": "integer" },
+              "late": { "type": "integer" },
+              "recent": {
+                "type": "array",
+                "items": { "type": "object", "properties": { "id": { "type": "string" }, "assignmentId": { "type": "string" }, "status": { "type": "string" }, "turnedInAt": { "type": "string", "format": "date-time" }, "grade": { "type": "number" }, "createdAt": { "type": "string", "format": "date-time" } } }
+              }
+            }
+          },
+          "attendance": { "type": "object", "properties": { "week": { "nullable": true } } },
+          "participation": { "type": "object", "properties": { "month": { "nullable": true } } },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "userId": { "type": "string" }
         }
       }
     }

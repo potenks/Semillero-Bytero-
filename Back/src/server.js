@@ -16,6 +16,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import reportsRoutes from './routes/api/reports.js'
 import { AuthController } from './controllers/auth.controller.js'
+import studentsRoutes from './routes/api/students.js'
+import notificationsRoutes from './routes/api/notifications.js'
+import calendarRoutes from './routes/api/calendar.js'
+import http from 'http'
+import { initNotificationsWS } from './ws/notifications.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,6 +30,16 @@ const apiSpec = JSON.parse(
 
 async function start() {
   await connectDatabase()
+
+  // Validación de configuración de Google OAuth
+  const defaultRedirect = `http://localhost:${env.port}/api/auth/google/callback`
+  const redirectUri = env.googleRedirectUri || defaultRedirect
+  if (!env.googleClientId || !env.googleClientSecret) {
+    console.error('[Auth][Google] Configuración inválida: GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET ausentes')
+    console.error(`[Auth][Google] Ajusta Back/.env. Ejemplo redirectUri esperado: ${redirectUri}`)
+    process.exit(1)
+  }
+  console.log(`[Auth][Google] clientId presente: ${!!env.googleClientId}. redirectUri: ${redirectUri}`)
 
   const app = express()
   app.use(cors({ origin: env.frontendUrl, credentials: true }))
@@ -39,6 +54,8 @@ async function start() {
   app.use('/api/analytics', analyticsRoutes)
   app.use('/api/sync', syncRoutes)
   app.use('/api/reports', reportsRoutes)
+  app.use('/api/calendar', calendarRoutes)
+  app.use('/api/notifications', notificationsRoutes)
   app.use('/webhooks/classroom', classroomWebhook)
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiSpec))
 
@@ -47,8 +64,13 @@ async function start() {
 
   app.get('/', (_req, res) => res.send('Semillero Backend activo'))
 
-  app.listen(env.port, () => {
+  // Crear servidor HTTP y montar WebSocket de notificaciones
+  const server = http.createServer(app)
+  initNotificationsWS(server)
+
+  server.listen(env.port, () => {
     console.log(`[Server] escuchando en http://localhost:${env.port}`)
+    console.log(`[WS] Notifications en ws://localhost:${env.port}/ws/notifications`)
   })
 }
 
@@ -56,3 +78,4 @@ start().catch((e) => {
   console.error('Error al iniciar el servidor', e)
   process.exit(1)
 })
+

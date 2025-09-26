@@ -61,13 +61,20 @@ export class GoogleClassroomService {
         }
       })
 
+      // Mapa de googleUserId -> usuario local (_id)
+      const googleToLocalUser = new Map()
+
       for (const s of students) {
         const email = s?.profile?.emailAddress
         const name = s?.profile?.name?.fullName
+        const googleUserId = s?.userId || s?.profile?.id
         if (!email) continue
         let stu = await User.findOne({ email })
         if (!stu) {
           stu = await User.create({ email, name, role: 'student' })
+        }
+        if (googleUserId) {
+          googleToLocalUser.set(String(googleUserId), stu._id)
         }
         await Enrollment.findOneAndUpdate(
           { userId: stu._id, courseId: courseDoc._id },
@@ -111,14 +118,21 @@ export class GoogleClassroomService {
         })
 
         for (const s of subs) {
+          const googleSubmissionId = s?.id
+          const googleStudentId = s?.userId
+          const localUserId = googleStudentId ? googleToLocalUser.get(String(googleStudentId)) : undefined
+          const turnedInAt = s.submissionHistory?.find(h => h.stateHistory?.state === 'TURNED_IN')?.stateHistory?.stateTimestamp
           await Submission.findOneAndUpdate(
-            { assignmentId: assignmentDoc._id, userId: undefined, status: s.state },
+            googleSubmissionId
+              ? { googleId: googleSubmissionId }
+              : { assignmentId: assignmentDoc._id, userId: localUserId || undefined, status: s.state || undefined },
             {
               assignmentId: assignmentDoc._id,
-              userId: undefined,
+              userId: localUserId,
               status: s.state,
-              turnedInAt: s.submissionHistory?.find(h => h.stateHistory?.state === 'TURNED_IN')?.stateHistory?.stateTimestamp,
+              turnedInAt,
               grade: s.assignedGrade,
+              googleId: googleSubmissionId,
             },
             { upsert: true }
           )

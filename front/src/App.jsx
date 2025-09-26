@@ -6,6 +6,8 @@ import Courses from './pages/Courses/Courses'
 import Header from './components/common/Header'
 import Sidebar from './components/common/Sidebar'
 import { useAuthContext } from './context/AuthContext'
+import Assignments from './pages/Assignments/Assignments'
+import Notifications from './components/common/Notifications'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuthContext()
@@ -18,6 +20,7 @@ export default function App() {
   return (
     <div className="min-h-screen text-gray-800">
       <Header />
+      <Notifications />
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-4 p-4">
         <Sidebar />
         <div>
@@ -44,6 +47,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Courses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assignments"
+              element={
+                <ProtectedRoute>
+                  <Assignments />
                 </ProtectedRoute>
               }
             />

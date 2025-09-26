@@ -11,5 +11,12 @@ export function useAuth() {
     return () => { mounted = false }
   }, [])
 
-  return { user, loading }
+  async function logout() {
+    try {
+      await AuthService.logout()
+    } catch (_) {}
+    setUser(null)
+  }
+
+  return { user, loading, logout }
 }
